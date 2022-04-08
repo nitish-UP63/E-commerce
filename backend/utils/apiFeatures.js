@@ -44,7 +44,7 @@ class ApiFeatures {
 
     //Filter for price and rating
 
-    
+   
 
     let queryStr = JSON.stringify(queryCopy);
 
@@ -52,6 +52,7 @@ class ApiFeatures {
 
     this.query = this.query.find(JSON.parse(queryStr));
 
+  
     
     return this;
   }

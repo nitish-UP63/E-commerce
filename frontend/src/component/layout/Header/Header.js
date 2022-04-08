@@ -1,6 +1,7 @@
 import React from "react";
 import { ReactNavbar } from "overlay-navbar";
 import logo from "../../../images/logo.png";
+import {FaUserAlt,FaSistrix , FaSuitcase} from "react-icons/fa";
 
 const options = {
   burgerColorHover: "#eb4034",
@@ -25,6 +26,16 @@ const options = {
   nav4justifyContent: "flex-start",
   link1ColorHover: "#eb4034",
   link1Margin: "1vmax",
+  
+
+  searchIcon: true,
+  SearchIconElement:FaSistrix,
+  cartIcon: true,
+  CartIconElement:FaSuitcase,
+  profileIcon: true,
+  ProfileIconElement:FaUserAlt,
+
+  searchIconUrl: "/search",
   profileIconUrl: "/login",
   profileIconColor: "rgba(35, 35, 35,0.8)",
   searchIconColor: "rgba(35, 35, 35,0.8)",
@@ -33,10 +44,23 @@ const options = {
   searchIconColorHover: "#eb4034",
   cartIconColorHover: "#eb4034",
   cartIconMargin: "1vmax",
-
   
-
-
+  searchIconMargin: "1vmax",
+  
+  profileIconMargin: "1vmax",
+  
+  // cartIconUrl: "/cart",
+  
+  searchIconSize: "2vmax",
+  cartIconSize: "2vmax",
+  profileIconSize: "2vmax",
+  
+  searchIconTransition: 0.5,
+  cartIconTransition: 0.5,
+  profileIconTransition: 0.5,
+  searchIconAnimationTime: 2,
+  // cartIconAnimationTime: searchIconAnimationTime + 0.5,
+  // profileIconAnimationTime: cartIconAnimationTime + 0.5,
 };
 
 const Header = () => {

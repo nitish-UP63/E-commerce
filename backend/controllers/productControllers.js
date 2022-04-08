@@ -25,13 +25,25 @@ exports.getAllProducts = catchAsyncError(async (req, res,next) => {
   const apiFeatures = new ApiFeatures(Product.find(), req.query)
     .search()
     .filter()
-    .pagination(resultPerPage);
-  const products = await apiFeatures.query;
+
+    //.clone() is used as ....Mongoose no longer allows executing the same query object twice. 
+    //If you do, you'll get a Query was already executed error. Executing the same query instance 
+    //twice is typically indicative of mixing callbacks and promises, but if you need to execute
+    // the same query twice, you can call Query#clone() to clone the query and re-execute it.
+    let products = await apiFeatures.query.clone();
+
+    let filteredProductsCount = products.length;
+
+    apiFeatures.pagination(resultPerPage);
+  
+    products = await apiFeatures.query;
 
   res.status(200).json({
     success: true,
     products,
     productsCount,
+    resultPerPage,
+    filteredProductsCount
   });
 });
 
