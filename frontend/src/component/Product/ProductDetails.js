@@ -19,7 +19,7 @@ const ProductDetails = ({ match }) => {
   useEffect(() => {
     if (error) {
       alert.error(error);
-      dispatch(clearErrors);
+      dispatch(clearErrors());
     }
     dispatch(getProductDetails(match.params.id));
   }, [dispatch, match.params.id, error ,alert]);

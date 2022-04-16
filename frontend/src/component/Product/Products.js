@@ -9,6 +9,19 @@ import Pagination from "react-js-pagination";
 
 import Slider from "@mui/material/Slider";
 import Typography from "@mui/material/Typography";
+import { ratingClasses } from "@mui/material";
+
+
+const categories = [
+  "ABCD",
+  "Laptop",
+  "Footwear",
+  "Bottom",
+  "Tops",
+  "Attire",
+  "Camera",
+  "SmartPhones",
+]
 
 const Products = ({ match }) => {
   const dispatch = useDispatch();
@@ -17,8 +30,17 @@ const Products = ({ match }) => {
 
   const [price, setPrice] = useState([0, 25000]);
 
-  const { error, loading, products, productsCount, resultPerPage,filteredProductsCount } =
-    useSelector((state) => state.products);
+  const [category,setCategory] = useState("");
+
+  const [ratings,setRatings] = useState(0);
+  const {
+    error,
+    loading,
+    products,
+    productsCount,
+    resultPerPage,
+    filteredProductsCount,
+  } = useSelector((state) => state.products);
 
   const keyword = match.params.keyword;
 
@@ -31,11 +53,10 @@ const Products = ({ match }) => {
   };
 
   useEffect(() => {
-    dispatch(getProduct(keyword, currentPage, price));
-  }, [dispatch, keyword, currentPage,price]);
+    dispatch(getProduct(keyword, currentPage, price,category));
+  }, [dispatch, keyword, currentPage, price,category]);
 
-
-  let count = filteredProductsCount
+  let count = filteredProductsCount;
 
   return (
     <Fragment>
@@ -61,6 +82,35 @@ const Products = ({ match }) => {
               min={0}
               max={25000}
             />
+
+            <Typography>Categories</Typography>
+            <ul className="categoryBox">
+              {categories.map((category) => (
+                <li
+                  className="category-link"
+                  key={category}
+                  onClick={() => setCategory(category)}
+                >
+                  {category}
+                </li>
+              ))}
+            </ul>
+
+            <fieldset>
+            <Typography component="legend">Ratings Above</Typography>
+            <Slider 
+              value={ratings}
+              onChange={(e,newRating) => {
+                setRatings(newRating);
+              }}
+              aria-labelledby="continuous-slider"
+              min={0}
+              max={5}
+              valueLabelDisplay="auto"
+            />
+            </fieldset>
+
+
           </div>
 
           {resultPerPage < count && (
