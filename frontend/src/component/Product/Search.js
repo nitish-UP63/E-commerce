@@ -1,4 +1,5 @@
 import React, { Fragment, useState } from "react";
+import MetaData from "../layout/MetaData";
 import "./Search.css"
 
 const Search = ({history}) => {
@@ -15,6 +16,7 @@ const Search = ({history}) => {
 
   return (
     <Fragment>
+    <MetaData title="Search a product -- ECOMMERCE" />
       <form className="searchBox" onSubmit={searchSubmitHandler}>
         <input
           type="text"

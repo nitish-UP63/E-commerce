@@ -4,18 +4,25 @@ const User = require("../models/userModel");
 const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail.js");
 const crypto = require("crypto");
+const cloudinary = require("cloudinary");
 
 //Register a user
 
 exports.registerUser = catchAsyncError(async (req, res, next) => {
+  const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+    folder: "avatars",
+    width: 150,
+    crop: "scale",
+  });
+
   const { name, email, password } = req.body;
   const user = await User.create({
     name,
     email,
     password,
     avatar: {
-      public_id: "This is sample id",
-      url: "profile_pic_url",
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
     },
   });
 
@@ -161,14 +168,31 @@ exports.updatePassword = catchAsyncError(async (req, res, next) => {
   sendToken(user, 200, res);
 });
 
-//Update user profile
+// update User Profile
 exports.updateProfile = catchAsyncError(async (req, res, next) => {
   const newUserData = {
     name: req.body.name,
     email: req.body.email,
   };
 
-  //we will add cloudinary later
+  if(req.body.avatar !== ""){
+    const user = await User.findById(req.user.id);
+
+    const imageId = user.avatar.public_id;
+
+    await cloudinary.v2.uploader.destroy(imageId);
+
+    const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+      folder: "avatars",
+      width: 150,
+      crop: "scale",
+    });
+
+    newUserData.avatar = {
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
+    };
+  }
 
   const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
@@ -228,18 +252,19 @@ exports.updateUserRole = catchAsyncError(async (req, res, next) => {
 
 //Delete user  --admin
 exports.deleteUser = catchAsyncError(async (req, res, next) => {
-    
-    const user = User.findById(req.params.id);
+  const user = User.findById(req.params.id);
 
-    //We will remove cloudinary later
-    if(!user){
-        return next(new ErrorHandler(`user does not exit with id : ${req.params.id}`));
-    }
+  //We will remove cloudinary later
+  if (!user) {
+    return next(
+      new ErrorHandler(`user does not exit with id : ${req.params.id}`)
+    );
+  }
 
-    await user.remove();
-  
-    res.status(200).json({
-      success: true,
-      message:"User Deleted Successfully."
-    });
+  await user.remove();
+
+  res.status(200).json({
+    success: true,
+    message: "User Deleted Successfully.",
   });
+});
