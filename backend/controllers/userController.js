@@ -63,25 +63,22 @@ exports.logout = catchAsyncError(async (req, res, next) => {
   });
 });
 
-//Forget Password
-exports.forgetPassword = catchAsyncError(async (req, res, next) => {
+// Forgot Password
+exports.forgotPassword = catchAsyncError(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    return next(new ErrorHandler("User Not found", 404));
+    return next(new ErrorHandler("User not found", 404));
   }
 
-  //Get Reset Password Token
+  // Get ResetPassword Token
   const resetToken = user.getResetPasswordToken();
 
   await user.save({ validateBeforeSave: false });
 
-  const resetPasswordUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/password/reset/${resetToken}`;
+  const resetPasswordUrl = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
 
-  const message = `Your password reset token is :-\n\n ${resetPasswordUrl} \n\n If you have not requested this emaail 
-then, please ignore it`;
+  const message = `Your password reset token is :- \n\n ${resetPasswordUrl} \n\nIf you have not requested this email then, please ignore it.`;
 
   try {
     await sendEmail({
@@ -92,7 +89,7 @@ then, please ignore it`;
 
     res.status(200).json({
       success: true,
-      message: `Email Send to ${user.email} successfully`,
+      message: `Email sent to ${user.email} successfully`,
     });
   } catch (error) {
     user.resetPasswordToken = undefined;

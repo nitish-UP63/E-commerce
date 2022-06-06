@@ -10,9 +10,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearErrors, login, register } from "../../actions/userAction";
 
 import { useAlert } from "react-alert";
-import { CLEAR_ERRORS } from "../../constants/productConstants";
 
-const LoginSignUp = ({history}) => {
+
+const LoginSignUp = ({history , location}) => {
   const dispatch = useDispatch();
   const alert = useAlert();
 
@@ -73,6 +73,8 @@ const LoginSignUp = ({history}) => {
     }
   };
 
+  const redirect = location.search ? location.search.split("=")[1]: "/account" 
+
   useEffect(() => {
     if (error) {
       alert.error(error);
@@ -80,10 +82,10 @@ const LoginSignUp = ({history}) => {
     }
 
     if(isAuthenticated){
-      history.push("/account")
+      history.push(redirect)
     }
 
-  }, [dispatch, error , isAuthenticated , history]);
+  }, [dispatch, error, alert, history, isAuthenticated, redirect]);
 
   const switchTabs = (e, tab) => {
     if (tab === "login") {
@@ -138,7 +140,7 @@ const LoginSignUp = ({history}) => {
                     onChange={(e) => setLoginPassword(e.target.value)}
                   />
                 </div>
-                <Link to="/password/forget">Forget Password ?</Link>
+                <Link to="/password/forgot">Forgot Password ?</Link>
                 <input type="submit" value="Login" className="loginBtn" />
               </form>
               <form

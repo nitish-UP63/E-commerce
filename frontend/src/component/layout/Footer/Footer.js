@@ -8,15 +8,15 @@ const Footer = () => {
   return (
     <footer id="footer">
     <div className='leftFooter'>
-    <h4>DOWNLOAD OUR APP</h4>
+    {/* <h4>DOWNLOAD OUR APP</h4>
     <p>Download App for Android and IOS mobile phone</p>
     <img src={playStore} alt="playstore" ></img>
-    <img src={appStore} alt="Appstore" ></img>
+    <img src={appStore} alt="Appstore" ></img> */}
     </div>
     <div className='midFooter'>
-    <h1>ECOMMERCE.</h1>
-    <p>High Quality is our first priority</p>
-     <p>Copyrights 2021 &copy; Nitish</p>
+    <h1>The Biker's Land</h1>
+    <p>Let's Make Your Bike Good Together</p>
+     <p>Copyrights 2022 &copy; Biker</p>
 
     </div>
     <div className='rightFooter'>

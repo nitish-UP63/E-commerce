@@ -1,18 +1,18 @@
 import "./App.css";
 
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import WebFont from "webfontloader";
-import React from "react";
+import React, { useState } from "react";
 
 import Footer from "./component/layout/Footer/Footer.js";
 import Header from "./component/layout/Header/Header.js";
 import Home from "./component/Home/Home.js";
-import Loader from "./component/layout/Loader/Loader";
+
 import ProductDetails from "./component/Product/ProductDetails.js";
 import Products from "./component/Product/Products.js";
 
 import Search from "./component/Product/Search.js";
-import LoginSignUp from "./component/user/LoginSignUp";
+import LoginSignUp from "./component/User/LoginSignUp";
 
 import store from "./store";
 import { loadUser } from "./actions/userAction";
@@ -20,14 +20,40 @@ import { loadUser } from "./actions/userAction";
 import UserOptions from "./component/layout/Header/UserOptions.js";
 import { useSelector } from "react-redux";
 
-import Profile from "./component/user/Profile.js"
-import ProtectedRoute from "./component/Route/ProtectedRoute"
+import Profile from "./component/User/Profile.js";
+import ProtectedRoute from "./component/Route/ProtectedRoute";
 
-import UpdateProfile from "./component/user/UpdateProfile"
-import UpdatePassword from "./component/user/UpdatePassword.js"
+import UpdateProfile from "./component/User/UpdateProfile";
+import UpdatePassword from "./component/User/UpdatePassword.js";
+import ForgotPassword from "./component/User/ForgotPassword.js";
+
+import ResetPassword from "./component/User/ResetPassword.js";
+import Cart from "./component/Cart/Cart";
+import Shipping from "./component/Cart/Shipping";
+import ConfirmOrder from "./component/Cart/ConfirmOrder";
+import Payment from "./component/Cart/Payment";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import OrderSuccess from "./component/Cart/OrderSuccess";
+import MyOrders from "./component/Order/MyOrders";
+import OrderDetails from "./component/Order/OrderDetails";
+
+import Dashboard from "./component/Admin/Dashboard"
+import ProductList from "./component/Admin/ProductList"
+
+
+import axios from "axios";
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.user);
+
+  const [stripeApiKey, setStripeApiKey] = useState("");
+
+  async function getStripeApiKey() {
+    const { data } = await axios.get("/api/v1/stripeapikey");
+
+    setStripeApiKey(data.stripeApiKey);
+  }
 
   React.useEffect(() => {
     WebFont.load({
@@ -37,26 +63,50 @@ function App() {
     });
 
     store.dispatch(loadUser());
+
+    getStripeApiKey();
   }, []);
   return (
     <Router>
       <Header />
-
       {isAuthenticated && <UserOptions user={user} />}
       <Route exact path="/" component={Home} />
       <Route exact path="/product/:id" component={ProductDetails} />
       <Route exact path="/products" component={Products} />
       <Route path="/products/:keyword" component={Products} />
-
       <Route exact path="/search" component={Search} />
       <ProtectedRoute exact path="/account" component={Profile} />
-
       <ProtectedRoute exact path="/me/update" component={UpdateProfile} />
-
-      <ProtectedRoute exact path="/password/update" component={UpdatePassword} />
-
+      <ProtectedRoute
+        exact
+        path="/password/update"
+        component={UpdatePassword}
+      />
+      <Route exact path="/password/forgot" component={ForgotPassword} />
+      <Route exact path="/password/reset/:token" component={ResetPassword} />
       <Route exact path="/login" component={LoginSignUp} />
+      <Route exact path="/cart" component={Cart} />
+      <ProtectedRoute exact path="/shipping" component={Shipping} />
+      {stripeApiKey && (
+        <Elements stripe={loadStripe(stripeApiKey)}>
+          <ProtectedRoute exact path="/process/payment" component={Payment} />
+        </Elements>
+      )}
+      <ProtectedRoute exact path="/success" component={OrderSuccess} />
+      <ProtectedRoute exact path="/orders" component={MyOrders} />
+      {/* If we dont use Switch component  then it will render both page at same time(on ssame page) */}
+      '{/* By using switch, only one will load at a time */}
+      <Switch>
+        <ProtectedRoute exact path="/order/confirm" component={ConfirmOrder} />
+        <ProtectedRoute exact path="/order/:id" component={OrderDetails} />
+      </Switch>
+
+
+      <ProtectedRoute isAdmin={true} exact path="/admin/dashboard" component={Dashboard} />
+      <ProtectedRoute isAdmin={true} exact path="/admin/products" component={ProductList} />
+
       <Footer />
+
     </Router>
   );
 }
