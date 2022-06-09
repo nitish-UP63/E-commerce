@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Sidebar from "./Sidebar.js";
 import "./Dashboard.css";
 import { Link } from "react-router-dom";
@@ -7,9 +7,25 @@ import { Doughnut, Line } from "react-chartjs-2";
 import MetaData from "../layout/MetaData.js";
 import { Chart } from "chart.js";
 import { registerables } from "chart.js";
+import { useSelector, useDispatch } from "react-redux";
+
+import { getAdminProduct } from "../../actions/productActions";
 
 const Dashboard = () => {
   Chart.register(...registerables);
+
+  const dispatch = useDispatch();
+
+  const { products } = useSelector((state) => state.products);
+
+  let outOfStock = 0;
+
+  products &&
+    products.forEach((item) => {
+      if (item.Stock === 0) {
+        outOfStock += 1;
+      }
+    });
 
   const lineState = {
     labels: ["Initial Amount", "Amount Earned"],
@@ -18,10 +34,14 @@ const Dashboard = () => {
         label: "TOTAL AMOUNT",
         backgroundColor: ["tomato"],
         hoverBackgroundColor: ["rgb(197, 72 ,49)"],
-        data: [0.4,20],
+        data: [0.4, 20],
       },
     ],
   };
+
+  useEffect(() => {
+    dispatch(getAdminProduct());
+  }, [dispatch]);
 
   const doughnutState = {
     labels: ["Out of Stock", "InStock"],
@@ -29,7 +49,7 @@ const Dashboard = () => {
       {
         backgroundColor: ["#00A684", "#6800B4"],
         hoverBackgroundColor: ["#4B5000", "#35014F"],
-        data: [2, 10],
+        data: [outOfStock,products.length - outOfStock],
       },
     ],
   };
@@ -50,7 +70,7 @@ const Dashboard = () => {
           <div className="dashboardSummaryBox2">
             <Link to="/admin/products">
               <p>Product</p>
-              <p>50</p>
+              <p>{products && products.length}</p>
             </Link>
             <Link to="/admin/orders">
               <p>Orders</p>

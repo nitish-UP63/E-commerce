@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  align-items: center;
+  /* align-items: center; */
   padding: 2vmax;
   box-sizing: border-box;
   border: 1px solid white;
@@ -24,6 +24,11 @@
 
 .CarouselImage {
   width: 20vmax;
+}
+.Carousel-div{
+  display: flex;
+  justify-content: center;
+  
 }
 
 .detailsBlock-1 > h2 {

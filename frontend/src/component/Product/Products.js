@@ -20,7 +20,8 @@ const categories = [
   "Bike Horn",
   "Seat Covers",
   "Handle Products",
-  "Bike Exhaust"
+  "Bike Exhaust",
+  "Helmets"
 ];
 
 const Products = ({ match }) => {

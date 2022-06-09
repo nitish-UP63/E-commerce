@@ -1,6 +1,6 @@
 const app = require("./app");
 
-const dotenv = require("dotenv");
+// const dotenv = require("dotenv");
 const connectDatabase = require("./config/database");
 
 const cloudinary = require("cloudinary");
@@ -12,8 +12,14 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
+
 //config
-dotenv.config({ path: "backend/config/config.env" });
+// if condition is for --- config file is alery present on heroku so we dont need config their.
+// config is needed in developing or on local environment
+// so if we require dotenv then it is imported here only rather then importing everytime 
+if(process.env.NODE_ENV!=="PRODUCTION"){
+require("dotenv").config({ path: "backend/config/config.env" });
+}
 
 //Connecting to database
 connectDatabase();

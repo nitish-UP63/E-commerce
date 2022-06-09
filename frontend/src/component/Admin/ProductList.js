@@ -14,13 +14,21 @@ import MetaData from "../layout/MetaData";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SideBar from "./Sidebar";
-// import { DELETE_PRODUCT_RESET } from "../../constants/productConstants";
+import { DELETE_PRODUCT_RESET } from "../../constants/productConstants";
 
-const ProductList = () => {
+const ProductList = ({history}) => {
   const dispatch = useDispatch();
   const alert = useAlert();
 
   const { error, products } = useSelector((state) => state.products);
+
+  const {error:deleteError , isDeleted} = useSelector(
+      (state) => state.product
+  )
+
+  const deleteProductHandler = (id) => {
+      dispatch(deleteProduct(id));
+  };
 
   useEffect(() => {
       if(error){
@@ -28,8 +36,19 @@ const ProductList = () => {
           dispatch(clearErrors());
       }
 
+      if(deleteError){
+        alert.error(deleteError);
+        dispatch(clearErrors());
+    }
+    if(isDeleted){
+        alert.success("Product Deleted Successfully");
+        history.push("/admin/dashboard");
+        dispatch({type:DELETE_PRODUCT_RESET});
+        // this dispatch is done so that is stops after deletion ...and not going in loop
+    }
+
       dispatch(getAdminProduct());
-  },[dispatch,alert,error]);
+  },[dispatch,alert,error,deleteError, history, isDeleted]);
 
   const columns = [
     { field: "id", headerName: "Product ID", minWidth: 200, flex: 0.5 },
@@ -62,7 +81,7 @@ const ProductList = () => {
                     <EditIcon />
 
                     </Link>
-                    <Button>
+                    <Button onClick={() => deleteProductHandler(params.id,"id")} >
                         <DeleteIcon/>
                     </Button>
                 </Fragment>

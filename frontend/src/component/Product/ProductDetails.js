@@ -107,8 +107,8 @@ const ProductDetails = ({ match }) => {
       <Fragment>
         <MetaData title={`${product.name} -- ECOMMERCE`} />
         <div className="ProductDetails">
-          <div  >
-            <Carousel>
+          <div className="Carousel-div" >
+            <Carousel  >
               {product.images &&
                 product.images.map((item, i) => (
                   <img

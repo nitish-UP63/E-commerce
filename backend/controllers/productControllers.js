@@ -2,9 +2,35 @@ const Product = require("../models/productModels");
 const ErrorHandler = require("../utils/errorHandler");
 const catchAsyncError = require("../middleware/catchAsyncError");
 const ApiFeatures = require("../utils/apiFeatures");
+const cloudinary = require("cloudinary");
 
 // create product -- Admin
 exports.createProduct = catchAsyncError(async (req, res, next) => {
+  let images = [];
+  if (typeof req.body.images === "string") {
+    // req.body.images === "string" --> this means if their is a single image i.e. it will not be an array, it will be string
+    images.push(req.body.images);
+  } else {
+    // if multiple image then we will directly write images equal to the array
+    images = req.body.images;
+  }
+
+
+  // Using the below for loop we upload the images on cloudinary 
+  const imagesLinks = [];
+  for (let i = 0; i < images.length; i++) {
+    const result = await cloudinary.v2.uploader.upload(images[i], {
+      folder: "products",
+    });
+
+    imagesLinks.push({
+      public_id: result.public_id,
+      url: result.secure_url,
+    });
+  }
+
+  req.body.images = imagesLinks;
+
   req.body.user = req.user.id; // Here we save the user id ,who is creating the product with product details
 
   const product = await Product.create(req.body);
@@ -16,40 +42,37 @@ exports.createProduct = catchAsyncError(async (req, res, next) => {
 });
 
 //Get all products
-exports.getAllProducts = catchAsyncError(async (req, res,next) => {
-
-
+exports.getAllProducts = catchAsyncError(async (req, res, next) => {
   const resultPerPage = 8;
   const productsCount = await Product.countDocuments();
 
   const apiFeatures = new ApiFeatures(Product.find(), req.query)
     .search()
-    .filter()
+    .filter();
 
-    //.clone() is used as ....Mongoose no longer allows executing the same query object twice. 
-    //If you do, you'll get a Query was already executed error. Executing the same query instance 
-    //twice is typically indicative of mixing callbacks and promises, but if you need to execute
-    // the same query twice, you can call Query#clone() to clone the query and re-execute it.
-    let products = await apiFeatures.query.clone();
+  //.clone() is used as ....Mongoose no longer allows executing the same query object twice.
+  //If you do, you'll get a Query was already executed error. Executing the same query instance
+  //twice is typically indicative of mixing callbacks and promises, but if you need to execute
+  // the same query twice, you can call Query#clone() to clone the query and re-execute it.
+  let products = await apiFeatures.query.clone();
 
-    let filteredProductsCount = products.length;
+  let filteredProductsCount = products.length;
 
-    apiFeatures.pagination(resultPerPage);
-  
-    products = await apiFeatures.query;
+  apiFeatures.pagination(resultPerPage);
+
+  products = await apiFeatures.query;
 
   res.status(200).json({
     success: true,
     products,
     productsCount,
     resultPerPage,
-    filteredProductsCount
+    filteredProductsCount,
   });
 });
 
-//Get all products -- Admin 
-exports.getAdminProducts = catchAsyncError(async (req, res,next) => {
-
+//Get all products -- Admin
+exports.getAdminProducts = catchAsyncError(async (req, res, next) => {
   const products = await Product.find();
 
   res.status(200).json({
@@ -65,6 +88,38 @@ exports.updateproduct = catchAsyncError(async (req, res, next) => {
   if (!product) {
     return next(new ErrorHandler("Product Not Found", 404)); // Next is basically a call back function
   }
+
+  //  IMages Start Here
+  let images = [];
+  if (typeof req.body.images === "string") {
+    // req.body.images === "string" --> this means if their is a single image i.e. it will not be an array, it will be string
+    images.push(req.body.images);
+  } else {
+    // if multiple image then we will directly write images equal to the array
+    images = req.body.images;
+  }
+
+  if(images !== undefined){
+    // Delete Image from cloudinary
+    for(let i = 0; i < product.images.length; i++){
+      await cloudinary.v2.uploader.destroy(productimages[i].public_id)
+    }
+
+  // Using the below for loop we upload the images on cloudinary 
+  const imagesLinks = [];
+  for (let i = 0; i < images.length; i++) {
+    const result = await cloudinary.v2.uploader.upload(images[i], {
+      folder: "products",
+    });
+
+    imagesLinks.push({
+      public_id: result.public_id,
+      url: result.secure_url,
+    });
+  }
+req.body.images = imagesLinks;
+  }
+  
 
   product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -102,6 +157,11 @@ exports.deleteProduct = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("Product Not Found", 404)); // Next is basically a call back function
   }
 
+  // Deleting Images From Cloudinary
+  for(let i = 0; i < product.images.length; i++){
+    await cloudinary.v2.uploader.destroy(productimages[i].public_id)
+  }
+
   await product.remove();
 
   res.status(200).json({
@@ -135,7 +195,6 @@ exports.createProductReview = catchAsyncError(async (req, res, next) => {
     });
   } else {
     product.reviews.push(review);
-    
   }
 
   product.numberOfReviews = product.reviews.length;
@@ -156,7 +215,7 @@ exports.createProductReview = catchAsyncError(async (req, res, next) => {
 
 //Get all reviews of a product
 exports.getProductReviews = catchAsyncError(async (req, res, next) => {
-  const product = await Product.findById(req.query.id);  // req.query.id => it is productID
+  const product = await Product.findById(req.query.id); // req.query.id => it is productID
 
   if (!product) {
     return next(new ErrorHandler("Product Not found", 404));
@@ -177,7 +236,7 @@ exports.deleteReview = catchAsyncError(async (req, res, next) => {
   }
 
   const reviews = product.reviews.filter(
-    (rev) => rev._id.toString() !== req.query.id.toString()    // req.query.id => It is review Id
+    (rev) => rev._id.toString() !== req.query.id.toString() // req.query.id => It is review Id
   );
 
   let avg = 0;
@@ -186,19 +245,23 @@ exports.deleteReview = catchAsyncError(async (req, res, next) => {
     avg += rev.rating;
   });
 
-  const ratings = avg/reviews.length;
+  const ratings = avg / reviews.length;
 
   const numberOfReviews = reviews.length;
 
-  await Product.findByIdAndUpdate(req.query.productId, {
-    reviews,
-    ratings,
-    numberOfReviews,
-  },{
-    new:true,
-    runValidators:true,
-    useFindAndModify:false
-  });
+  await Product.findByIdAndUpdate(
+    req.query.productId,
+    {
+      reviews,
+      ratings,
+      numberOfReviews,
+    },
+    {
+      new: true,
+      runValidators: true,
+      useFindAndModify: false,
+    }
+  );
 
   res.status(200).json({
     success: true,
